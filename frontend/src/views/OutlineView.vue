@@ -477,7 +477,7 @@ const startSelectedGeneration = () => {
 .outline-grid {
   display: grid;
   /* 响应式列：最小宽度 280px，自动填充 */
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
   max-width: 1400px;
   margin: 0 auto;
@@ -493,9 +493,7 @@ const startSelectedGeneration = () => {
   border-radius: 8px; /* 较小的圆角 */
   background: white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  /* 保持一定的长宽比感，虽然高度自适应，但由于 flex column 和内容撑开，
-     这里设置一个 min-height 让它看起来像个竖向卡片 */
-  min-height: 360px; 
+  min-height: 620px;
   position: relative;
 }
 
@@ -625,7 +623,8 @@ const startSelectedGeneration = () => {
 .page-image-preview {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 3;
+  max-height: 320px;
   overflow: hidden;
   margin-bottom: 14px;
   border: 1px solid #f1eeee;
@@ -642,6 +641,7 @@ const startSelectedGeneration = () => {
 
 .page-image-preview.empty {
   aspect-ratio: 3 / 2;
+  max-height: 230px;
   display: grid;
   place-items: center;
   background: #fff8f9;
@@ -676,15 +676,16 @@ const startSelectedGeneration = () => {
 
 /* 文本区域 - 核心 */
 .textarea-paper {
-  flex: 1; /* 占据剩余空间 */
+  flex: 1;
   width: 100%;
+  min-height: 180px;
   border: none;
   background: transparent;
-  padding: 0;
-  font-size: 16px; /* 更大的字号 */
-  line-height: 1.7; /* 舒适行高 */
+  padding: 2px 0;
+  font-size: 16px;
+  line-height: 1.75;
   color: #333;
-  resize: none; /* 禁止手动拉伸，保持卡片整体感 */
+  resize: vertical;
   font-family: inherit;
   margin-bottom: 10px;
 }
@@ -709,7 +710,7 @@ const startSelectedGeneration = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  min-height: 360px;
+  min-height: 620px;
   color: #ccc;
   transition: all 0.2s;
 }
