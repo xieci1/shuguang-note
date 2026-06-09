@@ -27,8 +27,14 @@ def main() -> int:
         return 2
 
     sau_bin = os.environ.get("SAU_BIN", "sau")
+    profile_dir = Path(payload.get("account", {}).get("profile_dir") or ".").resolve()
+    profile_dir.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    env["PLAYWRIGHT_BROWSERS_PATH"] = env.get("PLAYWRIGHT_BROWSERS_PATH", "0")
+    env["CHROME_USER_DATA_DIR"] = str(profile_dir)
+    env["SAU_COOKIE_DIR"] = str(profile_dir)
     command = [sau_bin, "xiaohongshu", "login", "--account", account, "--headed"]
-    completed = subprocess.run(command)
+    completed = subprocess.run(command, env=env)
     return completed.returncode
 
 

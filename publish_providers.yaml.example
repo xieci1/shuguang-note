@@ -13,7 +13,10 @@ platforms:
     working_dir: .
     env:
       # 如果 sau 不在 PATH 中，可在部署环境变量中设置 SAU_BIN=/absolute/path/to/sau。
-      SAU_BIN: sau
+      SAU_BIN: /opt/social-auto-upload/.venv/bin/sau
       # 设为 true 时允许执行器点击最终发布按钮；设为 false 时执行器应停在人工确认前。
       SHUGUANG_NOTE_ALLOW_DIRECT_PUBLISH: "true"
+      # Docker 中使用远程浏览器桌面打开有头浏览器。
+      DISPLAY: ":99"
     timeout_seconds: 900
+    startup_timeout_seconds: 2

@@ -126,6 +126,9 @@ async function openLogin(accountId: string) {
     }
     await loadAccounts()
     notice.value = result.logs || '登录执行器已启动'
+    if (result.remote_browser_url) {
+      window.open(resolveRemoteBrowserUrl(result.remote_browser_url), '_blank', 'noopener,noreferrer')
+    }
   } catch (e: any) {
     error.value = e.response?.data?.error || e.message || '打开登录失败'
   } finally {
@@ -155,6 +158,11 @@ async function deleteAccount(accountId: string) {
 function formatDate(value: string) {
   const d = new Date(value)
   return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+function resolveRemoteBrowserUrl(value: string) {
+  if (/^https?:\/\//i.test(value)) return value
+  return new URL(value, window.location.origin).toString()
 }
 
 onMounted(loadAccounts)

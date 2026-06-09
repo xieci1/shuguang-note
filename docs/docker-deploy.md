@@ -12,6 +12,13 @@ cp -n text_providers.yaml.example text_providers.yaml
 cp -n image_providers.yaml.example image_providers.yaml
 cp -n publish_providers.yaml.example publish_providers.yaml
 
+# 推荐设置远程浏览器密码，用于小红书扫码登录页面
+cat > .env <<'EOF'
+SHUGUANG_NOTE_VNC_PASSWORD=请改成强密码
+# 如果前面有域名或反向代理，也可以显式指定：
+# SHUGUANG_NOTE_REMOTE_BROWSER_URL=http://服务器IP:6080/vnc.html?autoconnect=true&resize=scale&path=websockify
+EOF
+
 docker compose up -d --build
 ```
 
@@ -26,6 +33,12 @@ docker compose logs -f shuguang-note
 
 ```text
 http://服务器IP:12398
+```
+
+远程浏览器登录页：
+
+```text
+http://服务器IP:6080/vnc.html
 ```
 
 首次注册的用户会自动成为管理员。之后文本生成配置、图片生成配置可以在后台设置页修改，配置会保存到服务器当前目录的 YAML 文件中。
@@ -63,6 +76,16 @@ cd shuguang-note
 git pull
 docker compose up -d --build
 docker compose logs -f shuguang-note
+```
+
+如果这次更新涉及 `publish_providers.yaml.example`，已部署过的服务器不会自动覆盖真实 `publish_providers.yaml`。需要手动对照示例补配置，尤其是 Docker 发布功能需要：
+
+```yaml
+env:
+  SAU_BIN: /opt/social-auto-upload/.venv/bin/sau
+  DISPLAY: ":99"
+  SHUGUANG_NOTE_ALLOW_DIRECT_PUBLISH: "true"
+startup_timeout_seconds: 2
 ```
 
 如果是在服务器上直接修改源码，没有走 Git，也需要重新构建容器：
@@ -105,13 +128,20 @@ docker compose logs -f shuguang-note
 
 当前发布功能依赖外部 `sau` 命令。普通图文生成不需要它。
 
-注意：设置页里的“打开登录”不是网页跳转，它会让后端在运行环境里启动 `sau xiaohongshu login --headed`。如果项目部署在服务器 Docker 里，浏览器窗口会出现在服务器/容器侧，不会弹到你当前电脑的浏览器页面。
+Docker 镜像已内置一个远程浏览器桌面和 noVNC。设置页点击“打开登录”后，后端会启动 `sau xiaohongshu login --account <账号> --headed`，前端会自动打开远程浏览器页面，用户在网页里的浏览器窗口扫码登录即可。
 
 如果服务器上要使用小红书登录和发布，需要满足：
 
-- 镜像或服务器环境中已安装 `social-auto-upload`
-- `publish_providers.yaml` 里的 `SAU_BIN` 能找到 `sau`
-- 服务器具备可操作的图形环境，例如桌面、VNC、noVNC 或 X11 转发
+- 服务器安全组/防火墙放行 `12398` 和 `6080`
+- `.env` 中设置 `SHUGUANG_NOTE_VNC_PASSWORD`
+- `publish_providers.yaml` 里的 `SAU_BIN` 能找到 `sau`，Docker 默认是 `/opt/social-auto-upload/.venv/bin/sau`
 - `data/browser_profiles/` 已持久化挂载，登录态才能在容器重启后保留
+- 第一版远程桌面是单实例，同一时间建议只让一个用户扫码登录，避免多人同时操作同一个远程桌面
 
-如果服务器没有图形环境，建议先只在服务器使用图文生成功能；小红书登录/发布放在有桌面环境的机器上执行，或者后续单独接入远程浏览器/noVNC 方案。
+如果使用域名或反向代理，建议在 `.env` 里显式配置远程浏览器地址：
+
+```bash
+SHUGUANG_NOTE_REMOTE_BROWSER_URL=https://你的域名/remote-browser/vnc.html?autoconnect=true&resize=scale&path=websockify
+```
+
+第一版默认直接暴露 `6080`，生产环境建议至少配置强密码，并限制只给可信用户访问。

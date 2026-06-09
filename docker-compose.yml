@@ -7,11 +7,17 @@ services:
     container_name: shuguang-note
     ports:
       - "12398:12398"
+      - "6080:6080"
     environment:
       FLASK_DEBUG: "false"
       FLASK_HOST: "0.0.0.0"
       FLASK_PORT: "12398"
       SHUGUANG_NOTE_OUTPUT_DIR: "output"
+      SHUGUANG_NOTE_REMOTE_BROWSER: "true"
+      SHUGUANG_NOTE_NOVNC_PORT: "6080"
+      SHUGUANG_NOTE_REMOTE_BROWSER_URL: "${SHUGUANG_NOTE_REMOTE_BROWSER_URL:-}"
+      # 建议上线前在 .env 中设置一个强密码：SHUGUANG_NOTE_VNC_PASSWORD=你的密码
+      SHUGUANG_NOTE_VNC_PASSWORD: "${SHUGUANG_NOTE_VNC_PASSWORD:-}"
     volumes:
       # 持久化用户、额度、发布账号、浏览器登录态
       - ./data:/app/data

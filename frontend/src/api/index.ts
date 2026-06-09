@@ -1070,6 +1070,7 @@ export async function deletePublishAccount(accountId: string): Promise<{
 export async function openPublishLogin(accountId: string): Promise<{
   success: boolean
   logs?: string
+  remote_browser_url?: string
   error?: string
 }> {
   const response = await axios.post(`${API_BASE_URL}/publish/accounts/${accountId}/login`, {})

@@ -50,6 +50,8 @@ def main() -> int:
         return 2
 
     sau_bin = os.environ.get("SAU_BIN", "sau")
+    profile_dir = Path(payload.get("account", {}).get("profile_dir") or ".").resolve()
+    profile_dir.mkdir(parents=True, exist_ok=True)
     command = [
         sau_bin,
         "xiaohongshu",
@@ -73,6 +75,9 @@ def main() -> int:
         or os.environ.get("REDINK_ALLOW_DIRECT_PUBLISH", "")
     ).lower() in TRUE_VALUES
     env = os.environ.copy()
+    env["PLAYWRIGHT_BROWSERS_PATH"] = env.get("PLAYWRIGHT_BROWSERS_PATH", "0")
+    env["CHROME_USER_DATA_DIR"] = str(profile_dir)
+    env["SAU_COOKIE_DIR"] = str(profile_dir)
 
     if not click_publish or not allow_direct_publish:
         env["SHUGUANG_NOTE_XHS_REVIEW_ONLY"] = "1"

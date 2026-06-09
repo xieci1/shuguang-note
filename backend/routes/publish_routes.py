@@ -1,5 +1,6 @@
 """发布中心 API 路由。"""
 
+import os
 from flask import Blueprint, jsonify, request
 
 from backend.auth import require_user
@@ -48,6 +49,8 @@ def create_publish_blueprint():
     def open_login(current_user, account_id):
         try:
             result = get_publish_service().open_login(account_id, current_user=current_user)
+            if result.get("success") and not result.get("remote_browser_url"):
+                result["remote_browser_url"] = _remote_browser_url_for_request()
             return jsonify(result), 200 if result.get("success") else 400
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 400
@@ -123,3 +126,14 @@ def create_publish_blueprint():
             return jsonify({"success": False, "error": str(e)}), 500
 
     return publish_bp
+
+
+def _remote_browser_url_for_request() -> str | None:
+    explicit_url = os.getenv("SHUGUANG_NOTE_REMOTE_BROWSER_URL")
+    if explicit_url:
+        return explicit_url.rstrip("/")
+    port = os.getenv("SHUGUANG_NOTE_NOVNC_PORT")
+    if not port:
+        return None
+    host = request.host.split(":", 1)[0]
+    return f"{request.scheme}://{host}:{port}/vnc.html?autoconnect=true&resize=scale&path=websockify"

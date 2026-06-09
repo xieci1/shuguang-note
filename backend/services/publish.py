@@ -82,7 +82,11 @@ class PublisherAdapter:
                 "profile_dir": str(self._resolve_path(account.profile_dir)),
             },
         }
-        return self._run_command(command, payload, wait=False)
+        result = self._run_command(command, payload, wait=False)
+        remote_browser_url = _remote_browser_url()
+        if remote_browser_url:
+            result["remote_browser_url"] = remote_browser_url
+        return result
 
     def publish_draft(self, account: PublishAccount, draft: PublishDraft) -> Dict[str, Any]:
         command = self.config.get("command")
@@ -131,7 +135,7 @@ class PublisherAdapter:
                 log_file.close()
                 return {
                     "success": True,
-                    "logs": "登录执行器已启动。服务器 Docker 部署不会弹到当前电脑，请在服务器图形环境或 VNC 中完成登录。",
+                    "logs": "登录执行器已启动，请打开远程浏览器完成扫码登录。",
                 }
             log_file.flush()
             log_file.seek(0)
@@ -592,6 +596,13 @@ def _command_args(command) -> List[str]:
         import shlex
         return shlex.split(command)
     raise ValueError("发布执行器 command 必须是字符串或数组")
+
+
+def _remote_browser_url() -> Optional[str]:
+    explicit_url = os.getenv("SHUGUANG_NOTE_REMOTE_BROWSER_URL")
+    if explicit_url:
+        return explicit_url.rstrip("/")
+    return None
 
 
 _service_instance = None
