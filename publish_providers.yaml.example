@@ -1,0 +1,19 @@
+platforms:
+  xhs:
+    enabled: true
+    # 外部 CLI 会收到一个 payload.json 路径作为最后一个参数。
+    # payload 中包含 account.profile_dir、post.title/body/tags/media、post.click_publish=true。
+    command:
+      - python
+      - scripts/xhs_sau_wrapper.py
+    # 登录命令可单独配置；未配置时复用 command。
+    login_command:
+      - python
+      - scripts/xhs_sau_login.py
+    working_dir: .
+    env:
+      # 如果 sau 不在 PATH 中，可在部署环境变量中设置 SAU_BIN=/absolute/path/to/sau。
+      SAU_BIN: sau
+      # 设为 true 时允许执行器点击最终发布按钮；设为 false 时执行器应停在人工确认前。
+      SHUGUANG_NOTE_ALLOW_DIRECT_PUBLISH: "true"
+    timeout_seconds: 900

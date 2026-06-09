@@ -1,0 +1,25 @@
+services:
+  shuguang-note:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shuguang-note:local
+    container_name: shuguang-note
+    ports:
+      - "12398:12398"
+    environment:
+      FLASK_DEBUG: "false"
+      FLASK_HOST: "0.0.0.0"
+      FLASK_PORT: "12398"
+      SHUGUANG_NOTE_OUTPUT_DIR: "output"
+    volumes:
+      # 持久化用户、额度、发布账号、浏览器登录态
+      - ./data:/app/data
+      # 持久化生成图片与旧版历史文件
+      - ./history:/app/history
+      - ./output:/app/output
+      # 持久化管理员在设置页保存的服务商配置
+      - ./text_providers.yaml:/app/text_providers.yaml
+      - ./image_providers.yaml:/app/image_providers.yaml
+      - ./publish_providers.yaml:/app/publish_providers.yaml
+    restart: unless-stopped
