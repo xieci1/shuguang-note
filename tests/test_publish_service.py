@@ -174,6 +174,48 @@ def test_publish_job_failure_when_cli_missing(
     assert "未配置" in job["error"]
 
 
+def test_open_login_reports_immediate_cli_failure(tmp_path, monkeypatch):
+    from backend.db import get_session
+    from backend.models import PublishAccount
+    from backend.services import publish as publish_module
+    from backend import db
+
+    db.configure_database(f"sqlite:///{tmp_path / 'publish.sqlite3'}")
+    db.init_db()
+    monkeypatch.setattr(publish_module, "_service_instance", None)
+
+    wrapper = tmp_path / "fake_login.py"
+    wrapper.write_text(
+        "import sys\n"
+        "print('missing display')\n"
+        "raise SystemExit(3)\n",
+        encoding="utf-8",
+    )
+    config = tmp_path / "publish_providers.yaml"
+    config.write_text(
+        "platforms:\n"
+        "  xhs:\n"
+        "    enabled: true\n"
+        f"    login_command: ['python', '{wrapper.as_posix()}']\n"
+        f"    working_dir: '{tmp_path.as_posix()}'\n"
+        "    startup_timeout_seconds: 1\n",
+        encoding="utf-8",
+    )
+
+    service = publish_module.PublishService()
+    service.profile_root = tmp_path / "profiles"
+    service.config_path = config
+    account_id = service.create_account("主账号", "xhs")
+
+    result = service.open_login(account_id)
+
+    assert result["success"] is False
+    assert "missing display" in result["error"]
+    with get_session() as session:
+        account = session.get(PublishAccount, account_id)
+        assert account.status == "created"
+
+
 def test_xhs_wrapper_direct_publish_deduplicates_images(tmp_path, monkeypatch):
     import scripts.xhs_sau_wrapper as wrapper
 

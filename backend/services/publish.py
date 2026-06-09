@@ -96,6 +96,7 @@ class PublisherAdapter:
 
     def _run_command(self, command, payload: Dict[str, Any], wait: bool) -> Dict[str, Any]:
         timeout = int(self.config.get("timeout_seconds", 900))
+        startup_timeout = float(self.config.get("startup_timeout_seconds", 2))
         workdir = str(self._resolve_path(self.config.get("working_dir") or "."))
         env = os.environ.copy()
         extra_env = self.config.get("env") or {}
@@ -112,8 +113,41 @@ class PublisherAdapter:
             with temp_file:
                 json.dump(payload, temp_file, ensure_ascii=False, indent=2)
             args = _command_args(command) + [temp_file.name]
-            subprocess.Popen(args, cwd=workdir, env=env)
-            return {"success": True, "logs": "登录窗口已打开"}
+            log_file = tempfile.NamedTemporaryFile(
+                prefix="shuguang_note_publish_",
+                suffix=".log",
+                delete=False,
+                mode="w+",
+                encoding="utf-8",
+            )
+            try:
+                process = subprocess.Popen(args, cwd=workdir, env=env, stdout=log_file, stderr=subprocess.STDOUT)
+            except Exception as exc:
+                log_file.close()
+                return {"success": False, "error": f"登录执行器启动失败: {exc}"}
+            try:
+                return_code = process.wait(timeout=max(0.1, startup_timeout))
+            except subprocess.TimeoutExpired:
+                log_file.close()
+                return {
+                    "success": True,
+                    "logs": "登录执行器已启动。服务器 Docker 部署不会弹到当前电脑，请在服务器图形环境或 VNC 中完成登录。",
+                }
+            log_file.flush()
+            log_file.seek(0)
+            logs = log_file.read().strip()
+            log_file.close()
+            parsed = _parse_command_output(logs)
+            if return_code != 0:
+                return {
+                    "success": False,
+                    "error": parsed.get("error") or logs or f"登录执行器退出码 {return_code}",
+                    "logs": logs,
+                }
+            return {
+                "success": True,
+                "logs": parsed.get("message") or logs or "登录执行器已完成",
+            }
 
         with tempfile.TemporaryDirectory(prefix="shuguang_note_publish_") as temp_dir:
             payload_path = Path(temp_dir) / "payload.json"

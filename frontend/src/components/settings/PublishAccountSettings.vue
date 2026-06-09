@@ -25,6 +25,7 @@
     </section>
 
     <div v-if="error" class="publish-error">{{ error }}</div>
+    <div v-if="notice" class="publish-notice">{{ notice }}</div>
 
     <div v-if="loading" class="settings-loading">
       <div class="spinner"></div>
@@ -75,6 +76,7 @@ import { useAuthStore } from '../../stores/auth'
 const auth = useAuthStore()
 const loading = ref(false)
 const error = ref('')
+const notice = ref('')
 const newAccountName = ref('')
 const accounts = ref<PublishAccount[]>([])
 
@@ -96,6 +98,7 @@ async function loadAccounts() {
 async function addAccount() {
   loading.value = true
   error.value = ''
+  notice.value = ''
   try {
     const result = await createPublishAccount(newAccountName.value.trim(), 'xhs')
     if (!result.success) {
@@ -114,12 +117,15 @@ async function addAccount() {
 async function openLogin(accountId: string) {
   loading.value = true
   error.value = ''
+  notice.value = ''
   try {
     const result = await openPublishLogin(accountId)
     if (!result.success) {
       error.value = result.error || '打开登录失败'
+      return
     }
     await loadAccounts()
+    notice.value = result.logs || '登录执行器已启动'
   } catch (e: any) {
     error.value = e.response?.data?.error || e.message || '打开登录失败'
   } finally {
@@ -131,6 +137,7 @@ async function deleteAccount(accountId: string) {
   if (!confirm('确定删除这个发布账号吗？本地浏览器档案不会自动删除。')) return
   loading.value = true
   error.value = ''
+  notice.value = ''
   try {
     const result = await deletePublishAccount(accountId)
     if (!result.success) {
@@ -230,6 +237,16 @@ onMounted(loadAccounts)
   border-radius: 10px;
   background: #fff1f0;
   color: #d92d42;
+  font-weight: 700;
+}
+
+.publish-notice {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #b7ebc6;
+  border-radius: 10px;
+  background: #f2fff6;
+  color: #1f8f45;
   font-weight: 700;
 }
 

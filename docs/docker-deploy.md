@@ -103,4 +103,15 @@ docker compose logs -f shuguang-note
 
 ## 发布到小红书
 
-当前发布功能依赖外部 `sau` 命令。普通图文生成不需要它；如果要在 Docker 容器里直接打开登录和发布，需要在镜像或服务器环境中安装 `social-auto-upload` 并确保 `publish_providers.yaml` 里的 `SAU_BIN` 能找到该命令。
+当前发布功能依赖外部 `sau` 命令。普通图文生成不需要它。
+
+注意：设置页里的“打开登录”不是网页跳转，它会让后端在运行环境里启动 `sau xiaohongshu login --headed`。如果项目部署在服务器 Docker 里，浏览器窗口会出现在服务器/容器侧，不会弹到你当前电脑的浏览器页面。
+
+如果服务器上要使用小红书登录和发布，需要满足：
+
+- 镜像或服务器环境中已安装 `social-auto-upload`
+- `publish_providers.yaml` 里的 `SAU_BIN` 能找到 `sau`
+- 服务器具备可操作的图形环境，例如桌面、VNC、noVNC 或 X11 转发
+- `data/browser_profiles/` 已持久化挂载，登录态才能在容器重启后保留
+
+如果服务器没有图形环境，建议先只在服务器使用图文生成功能；小红书登录/发布放在有桌面环境的机器上执行，或者后续单独接入远程浏览器/noVNC 方案。
