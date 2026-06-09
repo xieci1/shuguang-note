@@ -78,6 +78,8 @@ def main() -> int:
     env["PLAYWRIGHT_BROWSERS_PATH"] = env.get("PLAYWRIGHT_BROWSERS_PATH", "0")
     env["CHROME_USER_DATA_DIR"] = str(profile_dir)
     env["SAU_COOKIE_DIR"] = str(profile_dir)
+    sau_root = Path(env.get("SAU_ROOT") or "/opt/social-auto-upload")
+    env["PYTHONPATH"] = _prepend_pythonpath(env.get("PYTHONPATH"), sau_root)
 
     if not click_publish or not allow_direct_publish:
         env["SHUGUANG_NOTE_XHS_REVIEW_ONLY"] = "1"
@@ -99,6 +101,13 @@ def main() -> int:
         "error": None if completed.returncode == 0 else logs or f"sau 退出码 {completed.returncode}",
     }, ensure_ascii=False))
     return completed.returncode
+
+
+def _prepend_pythonpath(current: str | None, path: Path) -> str:
+    values = [str(path)]
+    if current:
+        values.append(current)
+    return os.pathsep.join(values)
 
 
 if __name__ == "__main__":

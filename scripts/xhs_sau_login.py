@@ -33,9 +33,18 @@ def main() -> int:
     env["PLAYWRIGHT_BROWSERS_PATH"] = env.get("PLAYWRIGHT_BROWSERS_PATH", "0")
     env["CHROME_USER_DATA_DIR"] = str(profile_dir)
     env["SAU_COOKIE_DIR"] = str(profile_dir)
+    sau_root = Path(env.get("SAU_ROOT") or "/opt/social-auto-upload")
+    env["PYTHONPATH"] = _prepend_pythonpath(env.get("PYTHONPATH"), sau_root)
     command = [sau_bin, "xiaohongshu", "login", "--account", account, "--headed"]
     completed = subprocess.run(command, env=env)
     return completed.returncode
+
+
+def _prepend_pythonpath(current: str | None, path: Path) -> str:
+    values = [str(path)]
+    if current:
+        values.append(current)
+    return os.pathsep.join(values)
 
 
 if __name__ == "__main__":

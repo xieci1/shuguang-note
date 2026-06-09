@@ -83,6 +83,8 @@ docker compose logs -f shuguang-note
 ```yaml
 env:
   SAU_BIN: /opt/social-auto-upload/.venv/bin/sau
+  SAU_ROOT: /opt/social-auto-upload
+  PYTHONPATH: /opt/social-auto-upload
   DISPLAY: ":99"
   SHUGUANG_NOTE_ALLOW_DIRECT_PUBLISH: "true"
 startup_timeout_seconds: 2

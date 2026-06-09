@@ -80,7 +80,9 @@ ENV FLASK_PORT=12398
 ENV SHUGUANG_NOTE_OUTPUT_DIR=output
 ENV SHUGUANG_NOTE_REMOTE_BROWSER=true
 ENV SHUGUANG_NOTE_NOVNC_PORT=6080
+ENV SAU_ROOT=/opt/social-auto-upload
 ENV SAU_BIN=/opt/social-auto-upload/.venv/bin/sau
+ENV PYTHONPATH=/opt/social-auto-upload
 ENV PATH="/opt/social-auto-upload/.venv/bin:${PATH}"
 
 # 暴露端口
